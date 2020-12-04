@@ -1,0 +1,194 @@
+\documentclass[notheorems]{beamer}
+\usepackage[cp1251]{inputenc}
+\usepackage{SlideStyle}
+
+\titlegraphic{\vspace*{-7cm}
+    \parbox[c]{3cm}{\includegraphics[height=.7cm]{bsulogo}}
+    \hspace*{1cm}%
+    \parbox[c]{2cm}{\includegraphics[height=1.5cm]{FPMIlogo}}
+    \hspace*{1cm}%
+    \parbox[c]{3cm}{\includegraphics[height=.7cm]{MOUlogo}}
+    \vspace*{3cm}
+}
+
+
+\begin{document}
+
+\title[MPC]{\Large МЕТОДЫ УПРАВЛЕНИЯ ПО ПРОГНОЗИРУЮЩЕЙ МОДЕЛИ НА ОСНОВЕ ДАННЫХ}
+
+
+\author[В.В. Кулешов]{Кулешов Владислав Вячеславович}
+
+
+\institute[ФПМИ, БГУ]{}	
+
+
+\date[\copyright 21.05.2020]{}%{\scriptsize \structure{2017-2018}}
+
+\maketitle
+
+\newtheorem{Def}{Определение}
+%--------------------------------------------------------------------------
+\begin{frame}{Содержание}
+
+\begin{itemize}
+	\item Определния
+	\item Теорема
+	\item Задача с терминальными ограничениями
+	\item Алгоритм
+	\item Пример
+	\item Результаты
+\end{itemize}
+
+\end{frame}
+
+%--------------------------------------------------------------------------
+\begin{frame}{Определния}
+
+\begin{Def}
+	$\{x_k\}_{k=0}^{N-1}$ с $x_k \in \mathbb{R}^n$ постоянно возбуждающая порядка L, если $\rank (H_L(x))=nL$.
+\end{Def}
+
+\begin{Def}\label{defTrajectory}
+Пара $(u^s,y^s) \in \mathbb{R}^{m+p}$ -- положение равновесия линейной стационарной системой $G$, если последовательность $\{\overline{u}_k,\overline{y}_k\}^{n-1}_{k=0}$ с $(\overline{u}_k,\overline{y}_k) = (u^s,y^s) \; \forall k \in \mathbb{I}{[0,n-1]} $ -- траектория $G$.
+\end{Def}
+
+\end{frame}
+
+%--------------------------------------------------------------------------
+\begin{frame}{Теорема}
+
+\begin{theorem}\label{trajectoryTheorem}
+	Предположим, что $\{u^d_k,y^d_k\}^{N-1}_{k=0}$ -- траектория линейной стационарной системы $G$, где $u$ -- постоянно возбуждающее управление порядка $L+n$.
+\newline
+Тогда $\{\overline{u}_k,\overline{y}_k\}^{L-1}_{k=0}$ -- траектория $G$, тогда и только тогда, когда $\exists \alpha \in \mathbb{R}^{N-L+1}$ такое, что
+	\begin{equation}\label{formuleOfTrajectoryTheorem}
+		\begin{bmatrix}
+			H_L(u^d) \\
+			H_L(y^d)
+		\end{bmatrix} \alpha = 
+		\begin{bmatrix}
+			\overline{u} \\
+			\overline{y}
+		\end{bmatrix}.
+	\end{equation}
+\end{theorem}
+
+\end{frame}
+
+%--------------------------------------------------------------------------
+\begin{frame}{Задача с терминальными ограничениями}
+\begin{equation}\label{problem2a}
+		J^*_L(u_{[t-n,t-1]},y_{[t-n,t-1]}) = \underset{\substack{\alpha(t)\ \overline{u}(t),\overline{y}(t)}} \min \sum^{L-1}_{k=0}\ell(\overline{u}_k(t),\overline{y}_k(t))
+\end{equation}
+\begin{equation}\label{problem2b}
+	\begin{bmatrix}
+		\overline{u}_{[-n,-L-1]}(t) \\
+		\overline{y}_{[-n,-L-1]}(t)
+	\end{bmatrix} = 
+	\begin{bmatrix}
+		H_{L+n}(u^d) \\ 
+		H_{L+n}(y^d)
+	\end{bmatrix}\alpha(t),	
+\end{equation}
+\begin{equation}\label{problem2c}
+	\begin{bmatrix}
+		\overline{u}_{[-n,-1]}(t) \\ 
+		\overline{y}_{[-n,-1]}(t) 
+	\end{bmatrix} = 
+	\begin{bmatrix}
+		u_{[t-n,t-1]} \\
+		y_{[t-n,t-1]}
+	\end{bmatrix},
+\end{equation}
+\begin{equation}\label{problem2d}
+	\begin{bmatrix}
+		\overline{u}_{[L-n,L-1]}(t) \\ 
+		\overline{y}_{[L-n,L-1]}(t) 
+	\end{bmatrix} = 
+	\begin{bmatrix}
+		u_{n}^s \\
+		y_{n}^s
+	\end{bmatrix},
+\end{equation}
+\begin{equation}\label{l}
+\ell(\overline{u},\overline{y})=\|\overline{u}-u^s\|_R^2+\|\overline{y}-y^s\|_Q^2, \: Q,R \succ 0.
+\end{equation}
+\begin{equation}
+	\overline{u}_k(t) \in \mathbb{U}, \overline{y}_k(t) \in \mathbb{Y}, k \in \mathbb{I}_{[0,L-1]}.
+\end{equation}
+\end{frame}
+%--------------------------------------------------------------------------
+\begin{frame}{Алгоритм}
+\newtheorem{algorithm}{Алгоритм}
+\begin{algorithm}\label{Alg1} (Схема управления на основе MPC)
+	\begin{enumerate}
+		\item В момент времени $t$ взять прошлые $n$ измерений $u_{[t-n,t-1]}, y_{[t-n,t-1]}$  и решить задачу.
+		\item Взять за управление $u_t=\overline{u}_0^*(t)$
+		\item Установить $t=t+1$ и вернуться к пункту 1).
+	\end{enumerate}
+\end{algorithm}
+\end{frame}
+
+%--------------------------------------------------------------------------
+\begin{frame}{Пример}
+
+\begin{displaymath}
+	x_{k+1}=\begin{bmatrix}
+		0.921 && 0 && 0.041 && 0 \\
+		0 && 0.918 && 0 && 0.033 \\
+		0 && 0 && 0.924 && 0 \\
+		0 && 0 && 0 && 0.937
+	\end{bmatrix}x_k+
+	\begin{bmatrix}
+		0.017 && 0.001 \\
+		0.001 && 0.023 \\
+		0 && 0.061 \\
+		0.072 && 0
+	\end{bmatrix}u_k,
+\end{displaymath}
+\begin{displaymath}
+	y_k=\begin{bmatrix}
+		1 && 0 && 0 && 0\\
+		0 && 1 && 0 && 0
+	\end{bmatrix}x_k.
+\end{displaymath}
+
+\begin{displaymath}
+	(u^s,y^s)=(
+		\begin{bmatrix}
+			1 \\ 1
+		\end{bmatrix},	
+		\begin{bmatrix}
+		   0.65 \\ 0.77
+		\end{bmatrix}		
+	).
+\end{displaymath}
+
+Предположим, что системные матрицы неизвестны, но доступна одна траектория $\{u^d_k,y^d_k\}^{N-1}_{k=0}$ длины $N$ = 100, которая генерируется путем равномерной выборки $u^d_k$ из $[-1,1]^2$.
+Горизонт прогнозирования установим в $L$ = 25, а матрицы затрат $Q = 3 \cdot E_2$, $R = 10^{-4} \cdot E_2$.
+
+\end{frame}
+%--------------------------------------------------------------------------
+\begin{frame}{Результаты}
+\begin{figure}[!htb]\centering
+   \begin{minipage}{0.48\textwidth}
+     \frame{\includegraphics[width=1\linewidth]{res_y1.eps}}
+   \end{minipage}
+   \begin {minipage}{0.48\textwidth}
+     \frame{\includegraphics[width=1\linewidth]{res_y2.eps}}
+   \end{minipage}
+\end{figure}
+\end{frame}
+
+%--------------------------------------------------------------------------
+\begin{frame}{Концовка}
+\begin{center}
+	Спасибо за внимание!
+\end{center} 
+
+\end{frame}
+
+\end{document} 
+
+\end{document} 
