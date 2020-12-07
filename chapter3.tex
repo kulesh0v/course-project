@@ -1,1 +1,49 @@
 \chapter{Управление по прогнозирующей модели на основе данных: неточные данные}\label{chap3}
+
+На практике выходной сигнал неизвестной системы G обычно недоступен в точности, но может быть подвержен шумам измерения. Это означает, что сложенные матрицы Ганкеля, зависящие от данных, в \ref{formuleOfTrajectoryTheorem} не покрывают пространство траекторий системы точно и, следовательно, выходные траектории не могут быть точно предсказаны. Более того, измерения выходного сигнала с зашумлением входят в начальные условия в задаче (\ref{problem2a}-\ref{problem2e}), что еще больше ухудшает точность прогноза. Следовательно, прямое применение схемы MPC из  Главы \ref{chap2} может привести к проблемам с осуществимостью или может сделать замкнутый контур нестабильным. В этом разделе мы решаем проблему зашумленных измерений с помощью надежной схемы MPC, управляемой данными, с терминальными ограничениями.
+
+Ключевой идеей для учета зашумленных измерений является ослабление ограничения равенства (\ref{problem2b}), когда параметр релаксации соответствующим образом штрафуется в функции стоимости. При зашумленной начальной траектории ввода-вывода $(u_{[t-n,t-1]},\widetilde{y}_{[t-n,t-1]})$ длины $n$, предлагаем следующую надежную модификацию (\ref{problem2a}-\ref{problem2e}).
+
+\begin{equation}\label{problem3a}
+		J^*_L(u_{[t-n,t-1]},\widetilde{y}_{[t-n,t-1]}) = \underset{\substack{\alpha(t),\overline{u}(t),\overline{y}(t), \sigma(t)}} \min \sum^{L-1}_{k=0}\ell(\overline{u}_k(t),\overline{y}_k(t)) + \lambda_\alpha \overline{\varepsilon}\|\alpha(t)\|^2_2 + \lambda_\sigma \|\sigma(t)\|^2_2
+\end{equation}
+\begin{equation}\label{problem3b}
+	\begin{bmatrix}
+		\overline{u}(t)\\
+		\overline{y}(t) + \sigma(t)
+	\end{bmatrix} = 
+	\begin{bmatrix}
+		H_{L+n}(u^d) \\ 
+		H_{L+n}(\widetilde{y}^d)
+	\end{bmatrix}\alpha(t),	
+\end{equation}
+\begin{equation}\label{problem3c}
+	\begin{bmatrix}
+		\overline{u}_{[-n,-1]}(t) \\ 
+		\overline{y}_{[-n,-1]}(t) 
+	\end{bmatrix} = 
+	\begin{bmatrix}
+		u_{[t-n,t-1]} \\
+		y_{[t-n,t-1]}
+	\end{bmatrix},
+\end{equation}
+\begin{equation}\label{problem3d}
+	\begin{bmatrix}
+		\overline{u}_{[L-n,L-1]}(t) \\ 
+		\overline{y}_{[L-n,L-1]}(t) 
+	\end{bmatrix} = 
+	\begin{bmatrix}
+		u_{n}^s \\
+		y_{n}^s
+	\end{bmatrix}, \overline{u}_k \in \mathbb{U}
+\end{equation}
+\begin{equation}
+	\|\sigma_k(t)\|_\infty \leq \overline{\varepsilon}(1+ \| \alpha(t) \|_1), k \in \mathbb{I}_[0,L-1]
+\end{equation}
+
+По сравнению с задачей (\ref{problem2a}-\ref{problem2e}) траектория выходных данных $\widetilde{y}^d$ и начальный выходной сигнал $\widetilde{y}_{[t-n,t-1]}$, полученные из онлайн измерений, были заменены их зашумленными аналогами.
+Также были добавлены следующие элементы:
+\begin{enumerate}
+	\item Переменная слабины $\sigma$ для учёта олнайн измерений $\widetilde{y}_{[t-n,t-1]}$ и для зашумленных данных $\widetilde{y}^d$, используемых для предсказаний.
+	\item Квадратичная норма для $\sigma$ и $\alpha$ с весами $\lambda_\alpha \overline{\varepsilon}, \lambda_\sigma > 0$, норма $\alpha$ зависит от уровня шума.
+\end{enumerate}
