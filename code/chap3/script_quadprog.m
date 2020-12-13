@@ -2,7 +2,7 @@ clc;
 clear;
 format long;
 
-% fileID = fopen('output.txt','w');
+fileID = fopen('output.txt','w');
 
 A = [
     0.921, 0, 0.041, 0;
@@ -24,20 +24,26 @@ D = zeros(2, 2);
 N = 400;
 uSteady = [1; 1];
 ySteady = [0.65; 0.77];
-L = 20;
-n = 1;
+L = 30;
+n = 4;
 m = 2;
 p = 2;
 coeffR = 10^-4;
 coeffQ = 3;
-% R = 10^-4 * eye(2);
-% Q = 3 * eye(2);
-% normValue = @(x, matrix) sqrt(x * matrix * x');
-% l = @(u, y) normValue(u, R)^2 + normValue(y, Q)^2;
+lambdaSigma=1000;
+lambdaAlphaEps=0.1;
+epsilon=0.002;
+R = 10^-4 * eye(2);
+Q = 3 * eye(2);
+normValue = @(x, matrix) sqrt(x * matrix * x');
+l = @(u, y) normValue(u, R)^2 + normValue(y, Q)^2;
 
-% objective = @(x) objectiveFunc(x, n, L, l, uSteady, ySteady);
+objective = @(x) objectiveFunc(x, n, L, l, uSteady, ySteady);
 
-% {u^d, y^d}.
+alphaShift = (L + n) * 4;
+alphaRange = alphaShift + 1:(L + n) * 4 + N - (L + n) + 1;
+sigmaShift = alphaRange(end);
+sigmaRange = sigmaShift + 1:(L + n) * 4 + N - (L + n) + 1 + (L + n) * 2;
 
 uData = zeros(1, N * 2);
 yData = zeros(1, N * 2);
@@ -45,7 +51,7 @@ curX = zeros(1, 4)';
 
 for i = 1:N
     uData(1, [i * 2 - 1 i * 2]) = [ - 1 + 2 / N * (i - 1)];
-%     uData(1, [i * 2 - 1 i * 2]) = [-1 + rand * 2 -1 + rand * 2];
+    %uData(1, [i * 2 - 1 i * 2]) = [-1 + rand * 2 -1 + rand * 2];
     yData(1, [i * 2 - 1 i * 2]) = [(C * curX)];
     curX = A * curX + B * uData(1, [i * 2 - 1 i * 2])';
 end
@@ -57,13 +63,12 @@ xRes = zeros(N + n + L, 4);
 steadyFirstIndex = (L + n) * 4 + (N - (L + n) + 1) + 1;
 
 Aeq = zeros(((L + n) * 4) + (L * 4), ...
-            ((L + n) * 4 )+ (N - (L + n) + 1) + (L * 4));
+            ((L + n) * 4 )+ (N - (L + n) + 1) + (L * 4) + (L + n) *2);
 beq = zeros(1, ((L + n) * 4) + (L * 4));
 uHankel = hankelMatrix(reshape(uData, 2, N)', L + n, N);
 yHankel = hankelMatrix(reshape(yData, 2, N)', L + n, N);
-alphaShift = (L + n) * 4;
-alphaRange = alphaShift + 1:(L + n) * 4 + N - (L + n) + 1;
 
+sigmaIndex = 1;
 for i = 1:4:(L + n) * 4
     Aeq(i, i) = 1;
     Aeq(i + 1, i + 1) = 1;
@@ -74,6 +79,11 @@ for i = 1:4:(L + n) * 4
     Aeq(i + 1, alphaRange) = -uHankel(hIndex, :, 2);
     Aeq(i + 2, alphaRange) = -yHankel(hIndex, :, 1);
     Aeq(i + 3, alphaRange) = -yHankel(hIndex, :, 2);
+    
+    Aeq(i + 2, sigmaShift + sigmaIndex) = 1;
+    Aeq(i + 3, sigmaShift + sigmaIndex + 1) = 1;
+    
+    sigmaIndex = sigmaIndex + 2;
 end
 j = 0;
 for i = (L + n) * 4 + 1:numel(Aeq(:, 1))
@@ -82,8 +92,14 @@ for i = (L + n) * 4 + 1:numel(Aeq(:, 1))
 end
 beq(1, (L + n) * 4 + 1:(L + n) * 4 + (L * 4)) = 1;
 
-quadH = zeros(((L + n) * 4)  + (N - (L + n) + 1) + (L * 4));
-quadF = zeros(1, ((L + n) * 4)  + (N - (L + n) + 1) + (L * 4));
+quadH = zeros(((L + n) * 4)  + (N - (L + n) + 1) + (L * 4) + (L + n) * 2);
+quadF = zeros(1, ((L + n) * 4)  + (N - (L + n) + 1) + (L * 4) + (L + n) * 2);
+for i = alphaShift+1:alphaRange(end)
+    quadH(i,i)=lambdaAlphaEps;
+end
+for i = sigmaShift+1:sigmaRange(end)
+    quadH(i,i)=lambdaSigma;
+end
 for i = n * 4 + 1:4:(L + n) * 4
     quadH(i, i) = coeffR;
     quadH(i + 1, i + 1) = coeffR;
@@ -114,6 +130,14 @@ for t = 0:N
     Aeq(1:n * 4, alphaRange) = zeros(n * 4, N - (L + n) + 1);
     j = t + 1;
     for i = 1:4:L * 4
+        Aeq(i + 2, sigmaRange) = 0;
+        Aeq(i + 3, sigmaRange) = 0;
+        
+        Aeq(i, alphaRange) = 0;
+        Aeq(i + 1, alphaRange) = 0;
+        Aeq(i + 2, alphaRange) = 0;
+        Aeq(i + 3, alphaRange) = 0;
+        
         beq(i) = uRes(j, 1);
         beq(i + 1) = uRes(j, 2);
         beq(i + 2) = yRes(j, 1);
@@ -123,13 +147,21 @@ for t = 0:N
     
     % Terminal constraint.
     for i = L * 4 + 1:4:(L + n) * 4
+        Aeq(i + 2, sigmaRange) = 0;
+        Aeq(i + 3, sigmaRange) = 0;
+        
+        Aeq(i, alphaRange) = 0;
+        Aeq(i + 1, alphaRange) = 0;
+        Aeq(i + 2, alphaRange) = 0;
+        Aeq(i + 3, alphaRange) = 0;
+        
         beq(i) = uSteady(1, 1);
         beq(i + 1) = uSteady(2, 1);
         beq(i + 2) = ySteady(1, 1);
         beq(i + 3) = ySteady(2, 1);
     end
     options = optimoptions('quadprog', ...
-                           'MaxIter', 10000, ....
+                           'MaxIter', 100, ....
                            'TolFun', 1e-15, ...
                            'TolX', 1e-15);
     [res, value] = quadprog(quadH, quadF, [], [], ...
@@ -209,6 +241,5 @@ ylabel('y_2');
 
 hold off;
 
-%fclose(fileID);
-
+fclose(fileID);
 
