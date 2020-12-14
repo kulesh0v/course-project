@@ -119,13 +119,63 @@
 \end{equation}
 \end{frame}
 %--------------------------------------------------------------------------
-\begin{frame}{Алгоритм}
+\begin{frame}{Задача с терминальными ограничениями}
+\begin{multline}\label{problem3a}
+		J^*_L(u_{[t-n,t-1]},\widetilde{y}_{[t-n,t-1]}) = \underset{\substack{\alpha(t),\overline{u}(t),\overline{y}(t), \sigma(t)}} \min \sum^{L-1}_{k=0}\ell(\overline{u}_k(t),\overline{y}_k(t)) + \\ + \lambda_\alpha \overline{\varepsilon}\|\alpha(t)\|^2_2 + \lambda_\sigma \|\sigma(t)\|^2_2
+\end{multline}
+\begin{equation}\label{problem3b}
+	\begin{bmatrix}
+		\overline{u}(t)\\
+		\overline{y}(t) + \sigma(t)
+	\end{bmatrix} = 
+	\begin{bmatrix}
+		H_{L+n}(u^d) \\ 
+		H_{L+n}(\widetilde{y}^d)
+	\end{bmatrix}\alpha(t),	
+\end{equation}
+\begin{equation}\label{problem3c}
+	\begin{bmatrix}
+		\overline{u}_{[-n,-1]}(t) \\ 
+		\overline{y}_{[-n,-1]}(t) 
+	\end{bmatrix} = 
+	\begin{bmatrix}
+		u_{[t-n,t-1]} \\
+		y_{[t-n,t-1]}
+	\end{bmatrix},
+\end{equation}
+\begin{equation}\label{problem3d}
+	\begin{bmatrix}
+		\overline{u}_{[L-n,L-1]}(t) \\ 
+		\overline{y}_{[L-n,L-1]}(t) 
+	\end{bmatrix} = 
+	\begin{bmatrix}
+		u_{n}^s \\
+		y_{n}^s
+	\end{bmatrix}, \overline{u}_k \in \mathbb{U}
+\end{equation}
+\begin{equation}\label{problem3e}
+	\|\sigma_k(t)\|_\infty \leq \overline{\varepsilon}(1+ \| \alpha(t) \|_1), k \in \mathbb{I}_[0,L-1]
+\end{equation}
+\end{frame}
+%--------------------------------------------------------------------------
+\begin{frame}{Алгоритм 1}
 \newtheorem{algorithm}{Алгоритм}
 \begin{algorithm}\label{Alg1} (Схема управления на основе MPC)
 	\begin{enumerate}
 		\item В момент времени $t$ взять прошлые $n$ измерений $u_{[t-n,t-1]}, y_{[t-n,t-1]}$  и решить задачу.
 		\item Взять за управление $u_t=\overline{u}_0^*(t)$
 		\item Установить $t=t+1$ и вернуться к пункту 1).
+	\end{enumerate}
+\end{algorithm}
+\end{frame}
+
+%--------------------------------------------------------------------------
+\begin{frame}{Алгоритм 2}
+\begin{algorithm}\label{Alg2}(n-Шаговая схема управления на основе MPC)
+	\begin{enumerate}
+		\item В момент времени $t$ взять прошлые $n$ измерений $u_{[t-n,t-1]}, \widetilde{y}_{[t-n,t-1]}$  и решить задачу (,,).
+		\item Взять за управление $u_{[t,t+n-1]}=\overline{u}_{[t,n-1]}^*(t)$
+		\item Установить $t=t+n$ и вернуться к пункту 1).
 	\end{enumerate}
 \end{algorithm}
 \end{frame}
@@ -165,18 +215,18 @@
 	).
 \end{displaymath}
 
-Предположим, что системные матрицы неизвестны, но доступна одна траектория $\{u^d_k,y^d_k\}^{N-1}_{k=0}$ длины $N$ = 100, которая генерируется путем равномерной выборки $u^d_k$ из $[-1,1]^2$.
-Горизонт прогнозирования установим в $L$ = 25, а матрицы затрат $Q = 3 \cdot E_2$, $R = 10^{-4} \cdot E_2$.
+Предположим, что системные матрицы неизвестны, но доступна одна траектория $\{u^d_k,y^d_k\}^{N-1}_{k=0}$ длины $N$ = 400, которая генерируется путем равномерной выборки $u^d_k$ из $[-1,1]^2$.
+Горизонт прогнозирования установим в $L = 30$, и следующие параметры $Q = 3 \cdot E_2$, $R = 10^{-4} \cdot E_2, \lambda_\sigma = 1000, \lambda_\alpha\overline{\varepsilon}=0.1$.
 
 \end{frame}
 %--------------------------------------------------------------------------
 \begin{frame}{Результаты}
 \begin{figure}[!htb]\centering
    \begin{minipage}{0.48\textwidth}
-     \frame{\includegraphics[width=1\linewidth]{res_y1.eps}}
+     \frame{\includegraphics[width=1\linewidth]{chap2.eps}}
    \end{minipage}
    \begin {minipage}{0.48\textwidth}
-     \frame{\includegraphics[width=1\linewidth]{res_y2.eps}}
+     \frame{\includegraphics[width=1\linewidth]{chap3.eps}}
    \end{minipage}
 \end{figure}
 \end{frame}
