@@ -150,29 +150,14 @@ for t = 0:n:N
     end
 end
 hold off;
-
-% hold on;
-% plot(yRes(30:end, 1));
-% plot(ones(N + 10, 1) * (ySteady(1)))
-% plot(yRes(30:end, 2));
-% plot(ones(N + 10, 1) * (ySteady(2)))
-% ylim([0, 1.2]);
-% xlim([0,N+10]);
-% hold off;
-
-hold off;
-
-% yRes = yRes(1:N + n, :);
-% uRes = uRes(1:N + n, :);
-
 hold on;
 
-plt1 = plot(yRes(:, 1));
+plt1 = plot(yRes(30:end, 1));
 plt2 = plot(ones(N + 10, 1) * (ySteady(1)));
 ylim([0, 1.2]);
 xlim([0,N]);
 
-plt3 = plot(yRes(:, 2));
+plt3 = plot(yRes(30:end, 2));
 plt4 = plot(ones(N + 10, 1) * (ySteady(2)));
 ylim([0, 1.2]);
 xlim([0,N]);

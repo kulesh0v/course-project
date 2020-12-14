@@ -2,6 +2,8 @@ clc;
 clear;
 format long;
 
+fileID = fopen('output.txt','w');
+
 A = [
     0.921, 0, 0.041, 0;
     0, 0.918, 0, 0.033;
@@ -128,8 +130,14 @@ for t = 0:n:N
     Aeq(1:n * 4, alphaRange) = zeros(n * 4, N - (L + n) + 1);
     j = t + 1;
     for i = 1:4:L * 4
+        Aeq(i + 1, sigmaRange) = 0;
         Aeq(i + 2, sigmaRange) = 0;
         Aeq(i + 3, sigmaRange) = 0;
+        
+     %   Aeq(i, alphaRange) = 0;
+%         Aeq(i + 1, alphaRange) = 0;
+%         Aeq(i + 2, alphaRange) = 0;
+%         Aeq(i + 3, alphaRange) = 0;
         
         beq(i) = uRes(j, 1);
         beq(i + 1) = uRes(j, 2);
@@ -140,8 +148,14 @@ for t = 0:n:N
     
     % Terminal constraint.
     for i = L * 4 + 1:4:(L + n) * 4
+        Aeq(i + 1, sigmaRange) = 0;
         Aeq(i + 2, sigmaRange) = 0;
         Aeq(i + 3, sigmaRange) = 0;
+        
+         Aeq(i, alphaRange) = 0;
+%         Aeq(i + 1, alphaRange) = 0;
+%         Aeq(i + 2, alphaRange) = 0;
+%         Aeq(i + 3, alphaRange) = 0;
         
         beq(i) = uSteady(1, 1);
         beq(i + 1) = uSteady(2, 1);
@@ -156,19 +170,21 @@ for t = 0:n:N
                             Aeq, beq, [], [], [], options);    
     res = res(1:(L + n) * 4);
     j = timeIndex - n;
-    for i = 1:4:(L + n) * 4
-        uRes(j, 1) = res(i);
-        uRes(j, 2) = res(i + 1);
-        [dsResY, dsResX] = dynamicSystemFunc(uRes(j,:)', xRes(j,:)', A, B, C);
-         yRes(j,:) = dsResY;
-        j = j + 1;
-        xRes(j,:) = dsResX';
-    end
+    i = 1 + 4 * n;
+    uRes(j, :) = res(i:i+1);
+    [dsResY, dsResX] = dynamicSystemFunc(uRes(j,:)', xRes(j,:)', A, B, C);
+    yRes(j,:) = dsResY;
+    j = j + 1;
+    xRes(j,:) = dsResX';
+    disp(uRes(j - 1 , :));
+    disp(value);
 end
 hold off;
-hold on;
 
-disp(yRes(:,1));
+yRes = yRes(1:N + n, :);
+uRes = uRes(1:N + n, :);
+
+hold on;
 
 plt1 = plot(yRes(:, 1));
 plt2 = plot(ones(N + 10, 1) * (ySteady(1)));
@@ -189,6 +205,43 @@ grid on;
 
 xlabel('MPC iteration');
 ylabel('y_1, y_2');
+
 hold off;
 
+figure(2);
+hold on;
+
+plt1 = plot(yRes(:, 1));
+plt2 = plot(ones(N + 10, 1) * (ySteady(1)));
+ylim([0, 1.2]);
+xlim([0,N]);
+
+plt1.LineWidth = 1.5;
+plt2.LineWidth = 1.5;
+
+grid on;
+
+xlabel('MPC iteration');
+ylabel('y_1');
+
+hold off;
+
+figure(3);
+hold on;
+plt1 = plot(yRes(:, 2));
+plt2 = plot(ones(N + 10, 1) * (ySteady(2)));
+ylim([0, 1.2]);
+xlim([0,N]);
+
+plt1.LineWidth = 1.5;
+plt2.LineWidth = 1.5;
+
+grid on;
+
+xlabel('MPC iteration');
+ylabel('y_2');
+
+hold off;
+
+fclose(fileID);
 

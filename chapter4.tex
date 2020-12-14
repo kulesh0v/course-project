@@ -1,4 +1,4 @@
-\chapter{Числинные эксперементы}\label{chap4}
+\chapter{Численные эксперементы}\label{chap4}
 
 В этой главе применим схемы MPC из глав \ref{chap2} и \ref{chap3} и приведём результаты, полученные программными реализациями алгортимов \ref{Alg1} и \ref{Alg2}.
 
@@ -136,6 +136,11 @@ for i = n * 4 + 1:4:(L + n) * 4
         quadH(i + 3, j + 3) = -2 * ySteady(2) * coeffQ;
     end
 end
+squares = L * 4 * ...
+          (coeffR * uSteady(1)^2 + coeffR * uSteady(2)^2 ...
+          + coeffQ * ySteady(1)^2 + coeffQ * ySteady(2)^2);
+quadF(1, steadyFirstIndex) = squares;
+quadH = quadH * 2;
 \end{lstlisting}
 
 После начнём итерационный процесс от $0$ до $N$.
@@ -156,11 +161,6 @@ end
 \begin{lstlisting}
         Aeq(i + 2, sigmaRange) = 0;
         Aeq(i + 3, sigmaRange) = 0;
-        
-        Aeq(i, alphaRange) = 0;
-        Aeq(i + 1, alphaRange) = 0;
-        Aeq(i + 2, alphaRange) = 0;
-        Aeq(i + 3, alphaRange) = 0;
         
         beq(i) = uRes(j, 1);
         beq(i + 1) = uRes(j, 2);
@@ -187,11 +187,6 @@ end
         Aeq(i + 2, sigmaRange) = 0;
         Aeq(i + 3, sigmaRange) = 0;
         
-        Aeq(i, alphaRange) = 0;
-        Aeq(i + 1, alphaRange) = 0;
-        Aeq(i + 2, alphaRange) = 0;
-        Aeq(i + 3, alphaRange) = 0;
-        
         beq(i) = uSteady(1, 1);
         beq(i + 1) = uSteady(2, 1);
         beq(i + 2) = ySteady(1, 1);
@@ -210,12 +205,15 @@ end
 \end{lstlisting}
 И запишем результат.
 \begin{lstlisting}
-    i = 1 + 4 * n;
-    uRes(j, :) = res(i:i+1);
-    [dsResY, dsResX] = dynamicSystemFunc(uRes(j,:)', xRes(j,:)', A, B, C);
-    yRes(j,:) = dsResY;
-    j = j + 1;
-    xRes(j,:) = dsResX';
+    j = timeIndex - n;
+    for i = 1:4:(L + n) * 4
+        uRes(j, 1) = res(i);
+        uRes(j, 2) = res(i + 1);
+        [dsResY, dsResX] = dynamicSystemFunc(uRes(j,:)', xRes(j,:)', A, B, C);
+         yRes(j,:) = dsResY;
+        j = j + 1;
+        xRes(j,:) = dsResX';
+    end
 \end{lstlisting}
 
 
