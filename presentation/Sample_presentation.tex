@@ -151,10 +151,10 @@
 	\begin{bmatrix}
 		u_{n}^s \\
 		y_{n}^s
-	\end{bmatrix}, \overline{u}_k \in \mathbb{U}
+	\end{bmatrix}, \overline{u}_k \in \mathbb{U},
 \end{equation}
 \begin{equation}\label{problem3e}
-	\|\sigma_k(t)\|_\infty \leq \overline{\varepsilon}(1+ \| \alpha(t) \|_1), k \in \mathbb{I}_{[0,L-1]}
+	\|\sigma_k(t)\|_\infty \leq \overline{\varepsilon}(1+ \| \alpha(t) \|_1), k \in \mathbb{I}_{[0,L-1]}.
 \end{equation}
 \end{frame}
 %--------------------------------------------------------------------------
@@ -173,7 +173,7 @@
 \begin{frame}{Алгоритм 2}
 \begin{algorithm}\label{Alg2}(n-Шаговая схема управления на основе MPC)
 	\begin{enumerate}
-		\item В момент времени $t$ взять прошлые $n$ измерений $u_{[t-n,t-1]}, \widetilde{y}_{[t-n,t-1]}$  и решить задачу (,,).
+		\item В момент времени $t$ взять прошлые $n$ измерений $\{u_{[t-n,t-1]}, \widetilde{y}_{[t-n,t-1]}\}$  и решить задачу (\ref{problem3a})-(\ref{problem3e}).
 		\item Взять за управление $u_{[t,t+n-1]}=\overline{u}_{[t,n-1]}^*(t)$
 		\item Установить $t=t+n$ и вернуться к пункту 1).
 	\end{enumerate}

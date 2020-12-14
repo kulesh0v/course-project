@@ -168,8 +168,6 @@ end
 hold off;
 hold on;
 
-disp(yRes(:,1));
-
 plt1 = plot(yRes(:, 1));
 plt2 = plot(ones(N + 10, 1) * (ySteady(1)));
 ylim([0, 1.2]);
