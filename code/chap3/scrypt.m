@@ -23,7 +23,7 @@ A = [
  uSteady = [1; 1];
  ySteady = [0.65; 0.77];
  L = 30;
- n = 4;
+ n = 10;
  m = 2;
  p = 2;
  R = 10^-4 * eye(2);
@@ -68,7 +68,7 @@ for i = 1:4:(L + n) * 4
     Aeq(i, i) = 1;
     Aeq(i + 1, i + 1) = 1;
     Aeq(i + 2, i + 2) = 1;
-    Aeq(i + 3, i + 3) = 1;
+    Aeq(i + 3, i + 3) = 1;  
     Aeq(i + 2, sigmaShift + sigmaIndex) = 1;
     Aeq(i + 3, sigmaShift + sigmaIndex + 1) = 1;
     
@@ -84,7 +84,7 @@ end
 
 curX = zeros(1, 4);
 disp('MPC loop started.');
-for t = 0:N
+for t = 0:n:N
     disp('iteration');
     disp(t);
     
@@ -138,7 +138,6 @@ for t = 0:N
     % ? ?????????????
     %[res, value] = fmincon(objective, startedValues, [], [], Aeq, beq',[],[], @nonlinconfunc);
     
-    
     res = res(1:(L + n) * 4);
     j = timeIndex - n;
     for i = 1:4:(L + n) * 4
@@ -149,20 +148,44 @@ for t = 0:N
         j = j + 1;
         xRes(j,:) = dsResX';
     end
-    
-    disp(uRes(j - 1 , :));
-    disp(value);
 end
 hold off;
 
-hold on;
-plot(yRes(30:end, 1));
-plot(ones(N + 10, 1) * (ySteady(1)))
-plot(yRes(30:end, 2));
-plot(ones(N + 10, 1) * (ySteady(2)))
-ylim([0, 1.2]);
-xlim([0,N+10]);
+% hold on;
+% plot(yRes(30:end, 1));
+% plot(ones(N + 10, 1) * (ySteady(1)))
+% plot(yRes(30:end, 2));
+% plot(ones(N + 10, 1) * (ySteady(2)))
+% ylim([0, 1.2]);
+% xlim([0,N+10]);
+% hold off;
+
 hold off;
 
+% yRes = yRes(1:N + n, :);
+% uRes = uRes(1:N + n, :);
 
-%fclose(fileID);
+hold on;
+
+plt1 = plot(yRes(:, 1));
+plt2 = plot(ones(N + 10, 1) * (ySteady(1)));
+ylim([0, 1.2]);
+xlim([0,N]);
+
+plt3 = plot(yRes(:, 2));
+plt4 = plot(ones(N + 10, 1) * (ySteady(2)));
+ylim([0, 1.2]);
+xlim([0,N]);
+
+plt1.LineWidth = 2;
+plt2.LineWidth = 2;
+plt3.LineWidth = 2;
+plt4.LineWidth = 2;
+
+grid on;
+
+xlabel('MPC iteration');
+ylabel('y_1, y_2');
+
+hold off;
+
